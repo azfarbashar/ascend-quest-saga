@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CharacterCard } from "@/components/ui/character-card";
 import { RetroNavbar } from "@/components/retro-navbar";
+import { useAuth } from "@/components/auth/auth-context";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles, Zap, Target } from "lucide-react";
 import heroCharacters from "@/assets/hero-characters.png";
 import fantasyMapBg from "@/assets/fantasy-map-bg.png";
@@ -38,6 +40,8 @@ const CHARACTERS = [
 
 const Index = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-gradient-background text-foreground">
@@ -174,9 +178,10 @@ const Index = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
               size="lg" 
+              onClick={() => navigate(user ? "/dashboard" : "/auth")}
               className="bg-gradient-primary hover:scale-105 transition-all duration-300 shadow-glow-primary text-lg px-8 py-6"
             >
-              Create Account
+              {user ? "Go to Dashboard" : "Create Account"}
             </Button>
             <Button 
               size="lg" 

@@ -1,8 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sword, BookOpen, Calculator, Trophy, User, Settings } from "lucide-react";
+import { useAuth } from "@/components/auth/auth-context";
+import { useNavigate } from "react-router-dom";
 
 export const RetroNavbar = () => {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
   return (
     <nav className="sticky top-0 z-50 bg-gradient-background/95 backdrop-blur-sm border-b border-border">
       <div className="container mx-auto px-4 py-3">
@@ -39,13 +44,45 @@ export const RetroNavbar = () => {
 
           {/* User Actions */}
           <div className="flex items-center space-x-2">
-            <Button variant="outline" size="sm" className="hidden sm:flex">
-              <User className="w-4 h-4 mr-2" />
-              Login
-            </Button>
-            <Button size="sm" className="bg-gradient-primary hover:scale-105 transition-transform">
-              Sign Up
-            </Button>
+            {user ? (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate("/dashboard")}
+                  className="hidden sm:flex"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={signOut}
+                >
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate("/auth")}
+                  className="hidden sm:flex"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate("/auth")}
+                  className="bg-gradient-primary hover:scale-105 transition-transform"
+                >
+                  Sign Up
+                </Button>
+              </>
+            )}
             <Button variant="ghost" size="sm">
               <Settings className="w-4 h-4" />
             </Button>
