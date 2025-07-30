@@ -39,16 +39,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string, displayName?: string) => {
+    const selectedCharacter = localStorage.getItem('selectedCharacter');
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/`,
+        emailRedirectTo: `${window.location.origin}/dashboard`,
         data: {
           display_name: displayName,
+          selected_character: selectedCharacter,
         },
       },
     });
+    
+    // Clear the stored character selection after successful signup
+    if (!error) {
+      localStorage.removeItem('selectedCharacter');
+    }
+    
     return { error };
   };
 

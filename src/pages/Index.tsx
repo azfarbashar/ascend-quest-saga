@@ -5,6 +5,7 @@ import { RetroNavbar } from "@/components/retro-navbar";
 import { useAuth } from "@/components/auth/auth-context";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Sparkles, Zap, Target } from "lucide-react";
+import { useEffect } from "react";
 import heroCharacters from "@/assets/hero-characters.png";
 import fantasyMapBg from "@/assets/fantasy-map-bg.png";
 
@@ -42,6 +43,21 @@ const Index = () => {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [user, navigate]);
+
+  const handleCharacterSelect = (characterId: string) => {
+    setSelectedCharacter(characterId);
+    // Store selected character for after auth
+    localStorage.setItem('selectedCharacter', characterId);
+    // Navigate to auth page
+    navigate('/auth');
+  };
 
   return (
     <div className="min-h-screen bg-gradient-background text-foreground">
@@ -112,22 +128,25 @@ const Index = () => {
                 key={character.id}
                 character={character}
                 isSelected={selectedCharacter === character.id}
-                onSelect={setSelectedCharacter}
+                onSelect={() => handleCharacterSelect(character.id)}
               />
             ))}
           </div>
           
-          {selectedCharacter && (
-            <div className="text-center mt-12">
-              <Button 
-                size="lg" 
-                className="bg-gradient-primary hover:scale-105 transition-all duration-300 shadow-glow-primary text-lg px-8 py-6"
-              >
-                Start Your Adventure
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </div>
-          )}
+          
+          <div className="text-center mt-12">
+            <p className="text-lg text-muted-foreground mb-4">
+              Choose a character above to start your adventure!
+            </p>
+            <Button 
+              size="lg" 
+              onClick={() => navigate('/auth')}
+              className="bg-gradient-primary hover:scale-105 transition-all duration-300 shadow-glow-primary text-lg px-8 py-6"
+            >
+              Continue to Sign Up
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
         </div>
       </section>
 

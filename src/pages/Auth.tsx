@@ -14,13 +14,22 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
   const { signUp, signIn, user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Check for selected character on mount
+  useEffect(() => {
+    const stored = localStorage.getItem('selectedCharacter');
+    if (stored) {
+      setSelectedCharacter(stored);
+    }
+  }, []);
+
   useEffect(() => {
     if (user) {
-      navigate("/");
+      navigate("/dashboard");
     }
   }, [user, navigate]);
 
@@ -70,15 +79,24 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen bg-gradient-background flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md space-y-6">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
           className="mb-6 text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Home
+          Back to Character Selection
         </Button>
+
+        {selectedCharacter && (
+          <Card className="bg-gradient-card border-border text-center">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground mb-2">Selected Character:</p>
+              <p className="text-lg font-semibold text-primary">{selectedCharacter}</p>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="bg-gradient-card border-border shadow-retro">
           <CardHeader className="text-center">
@@ -89,7 +107,10 @@ const Auth = () => {
               </CardTitle>
             </div>
             <CardDescription>
-              Join the adventure and master the SAT through retro gaming
+              {selectedCharacter 
+                ? `Create your account to start your adventure with ${selectedCharacter}!`
+                : "Join the adventure and master the SAT through retro gaming"
+              }
             </CardDescription>
           </CardHeader>
           
@@ -174,6 +195,22 @@ const Auth = () => {
                 </form>
               </TabsContent>
             </Tabs>
+          </CardContent>
+        </Card>
+
+        {/* Demo credentials info */}
+        <Card className="bg-gradient-card border-border mt-4">
+          <CardContent className="pt-6 text-center">
+            <p className="text-sm text-muted-foreground mb-2">
+              <strong>Demo Credentials (for testing):</strong>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Email: demo@satquest.com<br />
+              Password: demo123456
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Or create your own account above!
+            </p>
           </CardContent>
         </Card>
       </div>
