@@ -23,6 +23,7 @@ export type Database = {
           experience: number
           id: string
           level: number
+          map_position: Json | null
           selected_character: string | null
           updated_at: string
           user_id: string
@@ -36,6 +37,7 @@ export type Database = {
           experience?: number
           id?: string
           level?: number
+          map_position?: Json | null
           selected_character?: string | null
           updated_at?: string
           user_id: string
@@ -49,6 +51,7 @@ export type Database = {
           experience?: number
           id?: string
           level?: number
+          map_position?: Json | null
           selected_character?: string | null
           updated_at?: string
           user_id?: string

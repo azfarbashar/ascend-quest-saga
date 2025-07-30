@@ -8,7 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, Coins, Star, Settings } from "lucide-react";
-import GameHUD from "@/components/GameHUD";
 
 interface UserProfile {
   id: string;
@@ -142,28 +141,20 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Game HUD Integration */}
-        <div className="mb-8">
-          <Card className="bg-gradient-card border-border">
-            <CardHeader>
-              <CardTitle className="text-xl">Adventure Map</CardTitle>
-              <CardDescription>Track your progress and explore the world</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <GameHUD />
-            </CardContent>
-          </Card>
-        </div>
-
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-gradient-card border-border hover:border-primary/50 transition-all duration-300 cursor-pointer">
             <CardHeader>
-              <CardTitle className="text-lg">Story Quests</CardTitle>
-              <CardDescription>Continue your adventure</CardDescription>
+              <CardTitle className="text-lg">Adventure World</CardTitle>
+              <CardDescription>Explore the game world and level up</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-gradient-primary">Start Quest</Button>
+              <Button 
+                className="w-full bg-gradient-primary" 
+                onClick={() => navigate('/game')}
+              >
+                Enter Game World
+              </Button>
             </CardContent>
           </Card>
 
