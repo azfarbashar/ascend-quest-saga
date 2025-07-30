@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient';
+import { supabase } from '@/integrations/supabase/client';
 
 export async function getUserProfile() {
   const { data: { user } } = await supabase.auth.getUser();
@@ -38,4 +38,17 @@ export async function updateMapPosition(x: number, y: number, zone: string) {
 
   if (error) throw error;
   return { x, y, zone };
+}
+
+export async function updateCoins(amount: number) {
+  const profile = await getUserProfile();
+  const newCoins = profile.coins + amount;
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ coins: newCoins })
+    .eq('user_id', profile.user_id);
+
+  if (error) throw error;
+  return { coins: newCoins };
 }

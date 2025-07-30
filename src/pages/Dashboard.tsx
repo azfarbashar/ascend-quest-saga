@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Trophy, Coins, Star, Settings } from "lucide-react";
+import GameHUD from "@/components/GameHUD";
 
 interface UserProfile {
   id: string;
@@ -137,6 +138,19 @@ const Dashboard = () => {
                   Choose Character
                 </Button>
               )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Game HUD Integration */}
+        <div className="mb-8">
+          <Card className="bg-gradient-card border-border">
+            <CardHeader>
+              <CardTitle className="text-xl">Adventure Map</CardTitle>
+              <CardDescription>Track your progress and explore the world</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <GameHUD />
             </CardContent>
           </Card>
         </div>

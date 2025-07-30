@@ -32,14 +32,3 @@ const App = () => (
 );
 
 export default App;
-
-
-import GameHUD from '@/components/GameHUD';
-
-function App() {
-  return (
-    <div className="bg-gray-900 min-h-screen text-white">
-      <GameHUD />
-    </div>
-  );
-}
