@@ -326,62 +326,115 @@ const AdventureWorld = () => {
         </div>
 
         {/* World Map */}
-        <div className="relative w-full h-[600px] bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl"
+        <div className="relative w-full h-[600px] bg-gradient-to-b from-blue-400 via-blue-500 to-blue-700 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl"
              style={{
                backgroundImage: `
-                 radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.8) 0%, transparent 50%),
-                 radial-gradient(circle at 80% 70%, rgba(22, 163, 74, 0.6) 0%, transparent 50%),
-                 linear-gradient(45deg, #22c55e 0%, #16a34a 50%, #15803d 100%)
+                 linear-gradient(135deg, rgba(59, 130, 246, 0.9) 0%, rgba(37, 99, 235, 0.9) 50%, rgba(29, 78, 216, 1) 100%),
+                 radial-gradient(circle at 20% 20%, rgba(147, 197, 253, 0.3) 0%, transparent 50%),
+                 radial-gradient(circle at 80% 80%, rgba(96, 165, 250, 0.3) 0%, transparent 50%)
                `
              }}>
-          {/* Water pattern overlay */}
-          <div className="absolute inset-0 opacity-30">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.3)_0%,transparent_50%)]"></div>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.2)_0%,transparent_50%)]"></div>
+          {/* Floating grid pattern */}
+          <div className="absolute inset-0 opacity-20">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                linear-gradient(45deg, transparent 48%, rgba(255,255,255,0.1) 49%, rgba(255,255,255,0.1) 51%, transparent 52%),
+                linear-gradient(-45deg, transparent 48%, rgba(255,255,255,0.1) 49%, rgba(255,255,255,0.1) 51%, transparent 52%)
+              `,
+              backgroundSize: '30px 30px'
+            }}></div>
           </div>
 
-          {/* Checkpoints */}
-          {checkpoints.map((checkpoint) => {
+          {/* Floating Islands */}
+          {checkpoints.map((checkpoint, index) => {
             const isCompleted = completedCheckpoints.includes(checkpoint.id);
             const isUnlocked = isCheckpointUnlocked(checkpoint);
+            
+            // Create isometric floating island effect
+            const getIslandStyle = (id: string) => {
+              const baseStyles = {
+                transform: 'perspective(600px) rotateX(30deg) rotateY(-15deg)',
+                borderRadius: '20px',
+                boxShadow: '0 20px 40px rgba(0,0,0,0.3), 0 0 0 3px rgba(255,255,255,0.2)',
+                position: 'relative' as const,
+                background: '',
+                width: '120px',
+                height: '100px'
+              };
+
+              switch(id) {
+                case 'starting-village':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #22c55e 0%, #16a34a 70%, #15803d 100%)' };
+                case 'algebra-forest':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #16a34a 0%, #166534 70%, #14532d 100%)' };
+                case 'grammar-castle':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #dc2626 0%, #b91c1c 70%, #991b1b 100%)' };
+                case 'reading-mountains':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #6b7280 0%, #4b5563 70%, #374151 100%)' };
+                case 'calculus-caverns':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #7c3aed 0%, #6d28d9 70%, #5b21b6 100%)' };
+                case 'essay-temple':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #eab308 0%, #ca8a04 70%, #a16207 100%)' };
+                case 'crystal-tower':
+                  return { ...baseStyles, background: 'linear-gradient(145deg, #3b82f6 0%, #2563eb 70%, #1d4ed8 100%)' };
+                default:
+                  return baseStyles;
+              }
+            };
             
             return (
               <div
                 key={checkpoint.id}
-                className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:scale-110 ${
-                  isUnlocked ? 'animate-bounce' : ''
-                }`}
+                className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-500 hover:scale-110 animate-[float_6s_ease-in-out_infinite]"
                 style={{
                   left: `${checkpoint.x}%`,
-                  top: `${checkpoint.y}%`
+                  top: `${checkpoint.y}%`,
+                  animationDelay: `${index * 0.5}s`
                 }}
                 onClick={() => handleCheckpointClick(checkpoint)}
               >
-                {/* Area background */}
-                <div className={`w-28 h-28 rounded-2xl bg-gradient-to-br ${checkpoint.bgColor} shadow-xl border-4 border-white/50 flex flex-col items-center justify-center relative overflow-hidden transform hover:scale-110 transition-all duration-300`}>
+                {/* Floating Island */}
+                <div style={getIslandStyle(checkpoint.id)} className="relative overflow-hidden">
+                  {/* Island base with texture */}
+                  <div className="absolute inset-0 opacity-40">
+                    <div className="absolute inset-0" style={{
+                      backgroundImage: `
+                        radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 70%, rgba(0,0,0,0.1) 0%, transparent 50%)
+                      `
+                    }}></div>
+                  </div>
+                  
                   {/* Lock overlay for locked areas */}
                   {!isUnlocked && (
-                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
-                      <Lock className="w-8 h-8 text-white" />
+                    <div className="absolute inset-0 bg-black/70 flex items-center justify-center rounded-[20px] backdrop-blur-sm">
+                      <div className="bg-black/80 rounded-full p-3">
+                        <Lock className="w-8 h-8 text-white" />
+                      </div>
                     </div>
                   )}
                   
                   {/* Completion badge */}
                   {isCompleted && (
-                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
-                      <CheckCircle className="w-4 h-4 text-white" />
+                    <div className="absolute -top-3 -right-3 bg-green-500 rounded-full p-2 border-2 border-white shadow-lg">
+                      <CheckCircle className="w-5 h-5 text-white" />
                     </div>
                   )}
                   
-                  {/* Area icon */}
-                  <div className="text-2xl mb-1">{checkpoint.emoji}</div>
-                  <div className="text-xs font-bold text-white text-center px-1 drop-shadow-lg">
-                    {checkpoint.name.split(' ')[0]}
+                  {/* Island content */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                    <div className="text-3xl mb-2 drop-shadow-lg">{checkpoint.emoji}</div>
+                    <div className="text-sm font-bold text-white text-center drop-shadow-lg bg-black/30 px-2 py-1 rounded-lg backdrop-blur-sm">
+                      {checkpoint.name.split(' ')[0]}
+                    </div>
                   </div>
+
+                  {/* Island shadow */}
+                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-24 h-6 bg-black/20 rounded-full blur-sm"></div>
                 </div>
 
                 {/* Floating info on hover */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-4 opacity-0 hover:opacity-100 transition-opacity duration-300 pointer-events-none z-10">
                   <Card className="bg-white/95 backdrop-blur-sm border-white/50 shadow-xl">
                     <CardContent className="p-3 text-xs">
                       <div className="font-bold text-center mb-1">{checkpoint.name}</div>
