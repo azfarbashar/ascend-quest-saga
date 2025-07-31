@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, Coins, Star, Settings } from "lucide-react";
+import { Trophy, Coins, Star, Settings, User } from "lucide-react";
+import { CharacterSelection } from "@/components/CharacterSelection";
+import { useToast } from "@/hooks/use-toast";
 
 interface UserProfile {
   id: string;
@@ -19,11 +21,58 @@ interface UserProfile {
   coins: number;
 }
 
+interface Character {
+  id: string;
+  name: string;
+  class: string;
+  description: string;
+  icon: string;
+  color: string;
+  stats: {
+    strength: number;
+    intelligence: number;
+    agility: number;
+  };
+}
+
+const characters: Character[] = [
+  {
+    id: 'math-wizard',
+    name: 'Math Wizard',
+    class: 'Number Cruncher',
+    description: 'Master of equations and mathematical mysteries.',
+    icon: '🧙‍♂️',
+    color: 'math-wizard',
+    stats: { strength: 5, intelligence: 9, agility: 6 }
+  },
+  {
+    id: 'grammar-guardian',
+    name: 'Grammar Guardian',
+    class: 'Word Protector',
+    description: 'Defender of proper language and syntax.',
+    icon: '⚔️',
+    color: 'grammar-guardian',
+    stats: { strength: 7, intelligence: 8, agility: 5 }
+  },
+  {
+    id: 'reading-ranger',
+    name: 'Reading Ranger',
+    class: 'Text Explorer',
+    description: 'Scout of comprehension and critical thinking.',
+    icon: '🏹',
+    color: 'reading-ranger',
+    stats: { strength: 6, intelligence: 7, agility: 8 }
+  }
+];
+
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showCharacterSelection, setShowCharacterSelection] = useState(false);
+  const [selectedCharacterData, setSelectedCharacterData] = useState<Character | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (!user) {
@@ -42,12 +91,21 @@ const Dashboard = () => {
         console.error('Error fetching profile:', error);
       } else {
         setProfile(data);
+        if (data.selected_character) {
+          const character = characters.find(c => c.id === data.selected_character);
+          setSelectedCharacterData(character || null);
+        }
       }
       setLoading(false);
     };
 
     fetchProfile();
   }, [user, navigate]);
+
+  const handleCharacterSelect = (character: Character) => {
+    setSelectedCharacterData(character);
+    setProfile(prev => prev ? { ...prev, selected_character: character.id } : null);
+  };
 
   const experienceToNextLevel = 1000 * profile?.level || 1000;
   const experienceProgress = profile ? (profile.experience % 1000) / 10 : 0;
@@ -63,6 +121,70 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-background">
       <div className="container mx-auto px-4 py-8">
+        {/* Character Selection Modal */}
+        <CharacterSelection
+          currentCharacter={profile?.selected_character || ''}
+          onCharacterSelect={handleCharacterSelect}
+          isOpen={showCharacterSelection}
+          onClose={() => setShowCharacterSelection(false)}
+        />
+
+        <div className="flex gap-8">
+          {/* Character Sidebar */}
+          {selectedCharacterData && (
+            <div className="w-80 space-y-6">
+              <Card className="bg-gradient-card border-border">
+                <CardHeader>
+                  <CardTitle className="text-lg text-foreground flex items-center space-x-2">
+                    <User className="w-5 h-5" />
+                    <span>Your Character</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="text-center">
+                    <div className="text-5xl mb-2">{selectedCharacterData.icon}</div>
+                    <h3 className="text-xl font-bold text-foreground">{selectedCharacterData.name}</h3>
+                    <Badge variant="secondary" className="font-medium">
+                      {selectedCharacterData.class}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground text-center">
+                    {selectedCharacterData.description}
+                  </p>
+                  
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-semibold text-foreground">Stats</h4>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center">
+                        <div className="font-medium text-destructive">STR</div>
+                        <div className="text-muted-foreground">{selectedCharacterData.stats.strength}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-primary">INT</div>
+                        <div className="text-muted-foreground">{selectedCharacterData.stats.intelligence}</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="font-medium text-accent">AGI</div>
+                        <div className="text-muted-foreground">{selectedCharacterData.stats.agility}</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => setShowCharacterSelection(true)}
+                  >
+                    Change Character
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Main Content */}
+          <div className="flex-1 space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">
@@ -131,9 +253,9 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               {profile?.selected_character ? (
-                <Badge variant="secondary">{profile.selected_character}</Badge>
+                <Badge variant="secondary">{selectedCharacterData?.name || profile.selected_character}</Badge>
               ) : (
-                <Button size="sm" onClick={() => navigate("/")}>
+                <Button size="sm" onClick={() => setShowCharacterSelection(true)}>
                   Choose Character
                 </Button>
               )}
@@ -151,9 +273,9 @@ const Dashboard = () => {
             <CardContent>
               <Button 
                 className="w-full bg-gradient-primary" 
-                onClick={() => navigate('/game')}
+                onClick={() => navigate('/adventure')}
               >
-                Enter Game World
+                Enter Adventure
               </Button>
             </CardContent>
           </Card>
@@ -164,7 +286,12 @@ const Dashboard = () => {
               <CardDescription>Challenge powerful bosses</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-gradient-accent">Enter Battle</Button>
+              <Button 
+                className="w-full bg-gradient-accent"
+                onClick={() => navigate('/battle')}
+              >
+                Enter Battle
+              </Button>
             </CardContent>
           </Card>
 
@@ -174,7 +301,12 @@ const Dashboard = () => {
               <CardDescription>Earn bonus rewards</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full bg-gradient-secondary">Accept Challenge</Button>
+              <Button 
+                className="w-full bg-gradient-secondary"
+                onClick={() => navigate('/daily-challenge')}
+              >
+                Accept Challenge
+              </Button>
             </CardContent>
           </Card>
 
@@ -184,9 +316,17 @@ const Dashboard = () => {
               <CardDescription>Buy items and upgrades</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" variant="outline">Browse Shop</Button>
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => navigate('/shop')}
+              >
+                Browse Shop
+              </Button>
             </CardContent>
           </Card>
+        </div>
+          </div>
         </div>
       </div>
     </div>
