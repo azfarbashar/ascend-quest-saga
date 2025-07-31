@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/auth/auth-context';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Map, MapPin, Star, Trophy } from 'lucide-react';
+import { ArrowLeft, Star, Trophy, Lock, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MapExplorer from '@/components/MapExplorer';
+import CharacterUpgrade from '@/components/CharacterUpgrade';
 
 interface Checkpoint {
   id: string;
@@ -23,6 +25,8 @@ interface Checkpoint {
   xpReward: number;
   unlockLevel: number;
   isCompleted: boolean;
+  bgColor: string;
+  emoji: string;
 }
 
 const checkpoints: Checkpoint[] = [
@@ -30,8 +34,8 @@ const checkpoints: Checkpoint[] = [
     id: 'starting-village',
     name: 'Starting Village',
     description: 'Learn the basics of SAT math',
-    x: 2,
-    y: 2,
+    x: 50,
+    y: 70,
     zone: 'starting_area',
     difficulty: 'Easy',
     subject: 'Math',
@@ -39,14 +43,16 @@ const checkpoints: Checkpoint[] = [
     reward: 25,
     xpReward: 100,
     unlockLevel: 1,
-    isCompleted: false
+    isCompleted: false,
+    bgColor: 'from-green-400 to-green-600',
+    emoji: '🏘️'
   },
   {
     id: 'algebra-forest',
     name: 'Algebra Forest',
     description: 'Master linear and quadratic equations',
-    x: 4,
-    y: 3,
+    x: 20,
+    y: 50,
     zone: 'forest',
     difficulty: 'Easy',
     subject: 'Math',
@@ -54,14 +60,16 @@ const checkpoints: Checkpoint[] = [
     reward: 40,
     xpReward: 150,
     unlockLevel: 2,
-    isCompleted: false
+    isCompleted: false,
+    bgColor: 'from-green-500 to-green-700',
+    emoji: '🌲'
   },
   {
     id: 'grammar-castle',
     name: 'Grammar Castle',
     description: 'Defend against grammatical errors',
-    x: 6,
-    y: 4,
+    x: 50,
+    y: 30,
     zone: 'castle',
     difficulty: 'Medium',
     subject: 'Writing',
@@ -69,14 +77,16 @@ const checkpoints: Checkpoint[] = [
     reward: 60,
     xpReward: 200,
     unlockLevel: 3,
-    isCompleted: false
+    isCompleted: false,
+    bgColor: 'from-red-400 to-red-600',
+    emoji: '🏰'
   },
   {
     id: 'reading-mountains',
     name: 'Reading Mountains',
     description: 'Climb to new heights of comprehension',
-    x: 3,
-    y: 6,
+    x: 75,
+    y: 45,
     zone: 'mountains',
     difficulty: 'Medium',
     subject: 'Reading',
@@ -84,14 +94,16 @@ const checkpoints: Checkpoint[] = [
     reward: 75,
     xpReward: 250,
     unlockLevel: 4,
-    isCompleted: false
+    isCompleted: false,
+    bgColor: 'from-gray-400 to-gray-600',
+    emoji: '⛰️'
   },
   {
     id: 'calculus-caverns',
     name: 'Calculus Caverns',
     description: 'Explore the depths of advanced mathematics',
-    x: 7,
-    y: 6,
+    x: 25,
+    y: 20,
     zone: 'caverns',
     difficulty: 'Hard',
     subject: 'Math',
@@ -99,14 +111,16 @@ const checkpoints: Checkpoint[] = [
     reward: 100,
     xpReward: 350,
     unlockLevel: 6,
-    isCompleted: false
+    isCompleted: false,
+    bgColor: 'from-purple-500 to-purple-700',
+    emoji: '🕳️'
   },
   {
     id: 'essay-temple',
     name: 'Essay Temple',
     description: 'Master the art of persuasive writing',
-    x: 5,
-    y: 8,
+    x: 75,
+    y: 20,
     zone: 'temple',
     difficulty: 'Hard',
     subject: 'Writing',
@@ -114,7 +128,26 @@ const checkpoints: Checkpoint[] = [
     reward: 120,
     xpReward: 400,
     unlockLevel: 7,
-    isCompleted: false
+    isCompleted: false,
+    bgColor: 'from-yellow-400 to-yellow-600',
+    emoji: '🏛️'
+  },
+  {
+    id: 'crystal-tower',
+    name: 'Crystal Tower',
+    description: 'The ultimate SAT challenge',
+    x: 50,
+    y: 10,
+    zone: 'tower',
+    difficulty: 'Hard',
+    subject: 'Mixed',
+    questionsCount: 20,
+    reward: 200,
+    xpReward: 500,
+    unlockLevel: 10,
+    isCompleted: false,
+    bgColor: 'from-blue-400 to-purple-600',
+    emoji: '🗼'
   }
 ];
 
@@ -122,11 +155,11 @@ const AdventureWorld = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [userLevel, setUserLevel] = useState(1);
-  const [userPosition, setUserPosition] = useState({ x: 2, y: 2, zone: 'starting_area' });
   const [completedCheckpoints, setCompletedCheckpoints] = useState<string[]>([]);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<Checkpoint | null>(null);
   const [exploringCheckpoint, setExploringCheckpoint] = useState<Checkpoint | null>(null);
   const [userCharacter, setUserCharacter] = useState<any>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -139,7 +172,7 @@ const AdventureWorld = () => {
     const fetchUserData = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('level, map_position, selected_character')
+        .select('level, selected_character')
         .eq('user_id', user.id)
         .single();
 
@@ -147,11 +180,9 @@ const AdventureWorld = () => {
         console.error('Error fetching user data:', error);
       } else {
         setUserLevel(data.level || 1);
-        setUserPosition(data.map_position as { x: number; y: number; zone: string } || { x: 2, y: 2, zone: 'starting_area' });
         setUserCharacter(data.selected_character);
       }
 
-      // Load completed checkpoints from localStorage (in real app, this would be from database)
       const completed = JSON.parse(localStorage.getItem('completedCheckpoints') || '[]');
       setCompletedCheckpoints(completed);
       setLoading(false);
@@ -160,77 +191,21 @@ const AdventureWorld = () => {
     fetchUserData();
   }, [user, navigate]);
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy': return 'bg-accent text-accent-foreground';
-      case 'Medium': return 'bg-secondary text-secondary-foreground';
-      case 'Hard': return 'bg-destructive text-destructive-foreground';
-      default: return 'bg-muted text-muted-foreground';
-    }
-  };
-
-  const getSubjectIcon = (subject: string) => {
-    switch (subject) {
-      case 'Math': return '🧮';
-      case 'Reading': return '📖';
-      case 'Writing': return '✍️';
-      default: return '📚';
-    }
-  };
-
   const isCheckpointUnlocked = (checkpoint: Checkpoint) => {
     return userLevel >= checkpoint.unlockLevel;
   };
 
-  const isCheckpointAccessible = (checkpoint: Checkpoint) => {
-    const distance = Math.abs(checkpoint.x - userPosition.x) + Math.abs(checkpoint.y - userPosition.y);
-    return distance <= 2; // Can only move to adjacent or nearby checkpoints
-  };
-
-  const moveToCheckpoint = async (checkpoint: Checkpoint) => {
+  const handleCheckpointClick = (checkpoint: Checkpoint) => {
     if (!isCheckpointUnlocked(checkpoint)) {
       toast({
-        title: "Checkpoint Locked",
+        title: "Area Locked",
         description: `You need to reach level ${checkpoint.unlockLevel} to access this area.`,
         variant: "destructive",
       });
       return;
     }
 
-    if (!isCheckpointAccessible(checkpoint)) {
-      toast({
-        title: "Too Far Away",
-        description: "You can only travel to nearby locations. Complete closer checkpoints first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({ 
-          map_position: { x: checkpoint.x, y: checkpoint.y, zone: checkpoint.zone }
-        })
-        .eq('user_id', user!.id);
-
-      if (error) throw error;
-
-      setUserPosition({ x: checkpoint.x, y: checkpoint.y, zone: checkpoint.zone });
-      setSelectedCheckpoint(checkpoint);
-      
-      toast({
-        title: "Arrived!",
-        description: `You've reached ${checkpoint.name}`,
-      });
-    } catch (error) {
-      console.error('Error updating position:', error);
-      toast({
-        title: "Travel Failed",
-        description: "Unable to travel to this location.",
-        variant: "destructive",
-      });
-    }
+    setExploringCheckpoint(checkpoint);
   };
 
   const startQuest = (checkpoint: Checkpoint) => {
@@ -248,7 +223,6 @@ const AdventureWorld = () => {
       description: `Starting ${checkpoint.name} challenge`,
     });
 
-    // Simulate quest completion
     setTimeout(() => {
       const newCompleted = [...completedCheckpoints, checkpoint.id];
       setCompletedCheckpoints(newCompleted);
@@ -319,8 +293,16 @@ const AdventureWorld = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-b from-blue-400 via-blue-500 to-blue-600 relative overflow-hidden">
+      {/* Floating clouds background */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-[10%] left-[5%] text-6xl animate-[float_6s_ease-in-out_infinite]">☁️</div>
+        <div className="absolute top-[20%] right-[10%] text-4xl animate-[float_8s_ease-in-out_infinite_reverse]">☁️</div>
+        <div className="absolute top-[60%] left-[15%] text-5xl animate-[float_7s_ease-in-out_infinite]">☁️</div>
+        <div className="absolute bottom-[20%] right-[20%] text-3xl animate-[float_9s_ease-in-out_infinite_reverse]">☁️</div>
+      </div>
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center space-x-4">
@@ -329,152 +311,167 @@ const AdventureWorld = () => {
               Back to Dashboard
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Adventure World</h1>
-              <p className="text-muted-foreground">Explore the world and complete quests to level up</p>
+              <h1 className="text-4xl font-bold text-white drop-shadow-lg">World Map</h1>
+              <p className="text-blue-100">Choose your adventure</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Card className="bg-gradient-card border-border">
+            <Button 
+              onClick={() => setShowUpgradeModal(true)}
+              className="bg-yellow-500 hover:bg-yellow-600 text-white"
+            >
+              Upgrade Character
+            </Button>
+            <Card className="bg-white/20 backdrop-blur-sm border-white/30">
               <CardContent className="flex items-center space-x-2 p-3">
-                <MapPin className="w-4 h-4 text-primary" />
-                <span className="text-sm text-foreground">
-                  ({userPosition.x}, {userPosition.y}) {userPosition.zone}
-                </span>
-              </CardContent>
-            </Card>
-            <Card className="bg-gradient-card border-border">
-              <CardContent className="flex items-center space-x-2 p-3">
-                <Trophy className="w-4 h-4 text-primary" />
-                <span className="text-foreground">Level {userLevel}</span>
+                <Trophy className="w-4 h-4 text-yellow-400" />
+                <span className="text-white font-bold">Level {userLevel}</span>
               </CardContent>
             </Card>
           </div>
         </div>
 
-        {/* Map Grid */}
-        <div className="grid grid-cols-8 gap-2 mb-8 bg-gradient-card p-6 rounded-lg border border-border">
-          {Array.from({ length: 64 }, (_, index) => {
-            const x = (index % 8) + 1;
-            const y = Math.floor(index / 8) + 1;
-            
-            const checkpoint = checkpoints.find(cp => cp.x === x && cp.y === y);
-            const isCurrentPosition = userPosition.x === x && userPosition.y === y;
+        {/* World Map */}
+        <div className="relative w-full h-[600px] bg-gradient-to-br from-green-300 via-green-400 to-blue-400 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl">
+          {/* Water pattern overlay */}
+          <div className="absolute inset-0 opacity-30">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.3)_0%,transparent_50%)]"></div>
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(59,130,246,0.2)_0%,transparent_50%)]"></div>
+          </div>
+
+          {/* Checkpoints */}
+          {checkpoints.map((checkpoint) => {
+            const isCompleted = completedCheckpoints.includes(checkpoint.id);
+            const isUnlocked = isCheckpointUnlocked(checkpoint);
             
             return (
               <div
-                key={index}
-                className={`aspect-square border border-border rounded flex items-center justify-center text-xs cursor-pointer transition-all duration-200 ${
-                  isCurrentPosition 
-                    ? 'bg-gradient-primary text-primary-foreground border-primary' 
-                    : checkpoint 
-                      ? completedCheckpoints.includes(checkpoint.id)
-                        ? 'bg-accent/20 border-accent'
-                        : isCheckpointUnlocked(checkpoint)
-                          ? 'bg-secondary/20 border-secondary hover:bg-secondary/30'
-                          : 'bg-muted/20 border-muted'
-                      : 'bg-background/50'
+                key={checkpoint.id}
+                className={`absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 hover:scale-110 ${
+                  isUnlocked ? 'animate-bounce' : ''
                 }`}
-                onClick={() => checkpoint && setExploringCheckpoint(checkpoint)}
+                style={{
+                  left: `${checkpoint.x}%`,
+                  top: `${checkpoint.y}%`
+                }}
+                onClick={() => handleCheckpointClick(checkpoint)}
               >
-                {isCurrentPosition && '👤'}
-                {checkpoint && !isCurrentPosition && (
-                  <span className="text-lg">
-                    {completedCheckpoints.includes(checkpoint.id) ? '✅' : getSubjectIcon(checkpoint.subject)}
-                  </span>
-                )}
+                {/* Area background */}
+                <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${checkpoint.bgColor} shadow-xl border-4 border-white/50 flex flex-col items-center justify-center relative overflow-hidden`}>
+                  {/* Lock overlay for locked areas */}
+                  {!isUnlocked && (
+                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
+                      <Lock className="w-8 h-8 text-white" />
+                    </div>
+                  )}
+                  
+                  {/* Completion badge */}
+                  {isCompleted && (
+                    <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  
+                  {/* Area icon */}
+                  <div className="text-2xl mb-1">{checkpoint.emoji}</div>
+                  <div className="text-xs font-bold text-white text-center px-1 drop-shadow-lg">
+                    {checkpoint.name.split(' ')[0]}
+                  </div>
+                </div>
+
+                {/* Floating info on hover */}
+                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                  <Card className="bg-white/95 backdrop-blur-sm border-white/50 shadow-xl">
+                    <CardContent className="p-3 text-xs">
+                      <div className="font-bold text-center mb-1">{checkpoint.name}</div>
+                      <div className="text-muted-foreground text-center mb-2">{checkpoint.description}</div>
+                      <div className="flex items-center justify-between space-x-2">
+                        <Badge variant="secondary" className="text-xs">
+                          Level {checkpoint.unlockLevel}
+                        </Badge>
+                        <div className="flex items-center space-x-1">
+                          <Star className="w-3 h-3 text-yellow-500" />
+                          <span>{checkpoint.xpReward} XP</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             );
           })}
+
+          {/* Connecting paths */}
+          <svg className="absolute inset-0 w-full h-full pointer-events-none">
+            <defs>
+              <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style={{ stopColor: '#fbbf24', stopOpacity: 0.8 }} />
+                <stop offset="100%" style={{ stopColor: '#f59e0b', stopOpacity: 0.6 }} />
+              </linearGradient>
+            </defs>
+            {/* Connect starting village to forest */}
+            <path
+              d={`M ${50}% ${70}% Q ${35}% ${60}% ${20}% ${50}%`}
+              stroke="url(#pathGradient)"
+              strokeWidth="3"
+              fill="none"
+              strokeDasharray="10,5"
+              className="animate-pulse"
+            />
+            {/* Connect village to castle */}
+            <path
+              d={`M ${50}% ${70}% L ${50}% ${30}%`}
+              stroke="url(#pathGradient)"
+              strokeWidth="3"
+              fill="none"
+              strokeDasharray="10,5"
+              className="animate-pulse"
+            />
+            {/* Connect castle to mountains */}
+            <path
+              d={`M ${50}% ${30}% Q ${62}% ${37}% ${75}% ${45}%`}
+              stroke="url(#pathGradient)"
+              strokeWidth="3"
+              fill="none"
+              strokeDasharray="10,5"
+              className="animate-pulse"
+            />
+          </svg>
         </div>
 
-        {/* Checkpoint Details */}
-        {selectedCheckpoint && (
-          <Card className="bg-gradient-card border-border mb-8">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-3xl">{getSubjectIcon(selectedCheckpoint.subject)}</span>
-                  <div>
-                    <CardTitle className="text-xl text-foreground">{selectedCheckpoint.name}</CardTitle>
-                    <CardDescription>{selectedCheckpoint.description}</CardDescription>
-                  </div>
-                </div>
-                <Badge className={getDifficultyColor(selectedCheckpoint.difficulty)}>
-                  {selectedCheckpoint.difficulty}
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="flex items-center justify-between">
-              <div className="flex space-x-6 text-sm">
+        {/* Legend */}
+        <div className="mt-8 flex justify-center">
+          <Card className="bg-white/20 backdrop-blur-sm border-white/30">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-6 text-white">
                 <div className="flex items-center space-x-2">
-                  <Star className="w-4 h-4 text-accent" />
-                  <span>{selectedCheckpoint.questionsCount} questions</span>
+                  <div className="w-4 h-4 bg-green-500 rounded"></div>
+                  <span className="text-sm">Unlocked</span>
                 </div>
-                <span className="text-secondary font-medium">{selectedCheckpoint.reward} coins</span>
-                <span className="text-accent font-medium">{selectedCheckpoint.xpReward} XP</span>
+                <div className="flex items-center space-x-2">
+                  <Lock className="w-4 h-4" />
+                  <span className="text-sm">Locked</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="w-4 h-4 text-green-400" />
+                  <span className="text-sm">Completed</span>
+                </div>
               </div>
-              <Button 
-                onClick={() => startQuest(selectedCheckpoint)}
-                disabled={completedCheckpoints.includes(selectedCheckpoint.id)}
-                className={completedCheckpoints.includes(selectedCheckpoint.id) ? '' : 'bg-gradient-primary'}
-                variant={completedCheckpoints.includes(selectedCheckpoint.id) ? 'secondary' : 'default'}
-              >
-                {completedCheckpoints.includes(selectedCheckpoint.id) ? 'Completed' : 'Start Quest'}
-              </Button>
             </CardContent>
           </Card>
-        )}
-
-        {/* Available Checkpoints */}
-        <div className="space-y-4">
-          <h2 className="text-xl font-bold text-foreground flex items-center space-x-2">
-            <Map className="w-5 h-5" />
-            <span>Available Locations</span>
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {checkpoints.map((checkpoint) => {
-              const isCompleted = completedCheckpoints.includes(checkpoint.id);
-              const isUnlocked = isCheckpointUnlocked(checkpoint);
-              const isAccessible = isCheckpointAccessible(checkpoint);
-              
-              return (
-                <Card 
-                  key={checkpoint.id}
-                  className={`bg-gradient-card border-border transition-all duration-300 cursor-pointer ${
-                    isCompleted ? 'opacity-75' : 
-                    !isUnlocked ? 'opacity-50' : 
-                    'hover:border-primary/50'
-                  }`}
-                  onClick={() => moveToCheckpoint(checkpoint)}
-                >
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-2xl">{getSubjectIcon(checkpoint.subject)}</span>
-                      <div className="flex space-x-2">
-                        {isCompleted && <Badge variant="outline">✅</Badge>}
-                        {!isUnlocked && <Badge variant="secondary">🔒</Badge>}
-                        {!isAccessible && isUnlocked && <Badge variant="outline">📍</Badge>}
-                      </div>
-                    </div>
-                    <CardTitle className="text-sm text-foreground">{checkpoint.name}</CardTitle>
-                    <CardDescription className="text-xs">{checkpoint.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-0">
-                    <div className="flex items-center justify-between text-xs">
-                      <Badge className={getDifficultyColor(checkpoint.difficulty)}>
-                        {checkpoint.difficulty}
-                      </Badge>
-                      <span className="text-muted-foreground">
-                        ({checkpoint.x}, {checkpoint.y})
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
         </div>
       </div>
+
+      {showUpgradeModal && (
+        <CharacterUpgrade
+          character={userCharacter}
+          onClose={() => setShowUpgradeModal(false)}
+          onUpdate={(updatedCharacter) => {
+            setUserCharacter(updatedCharacter);
+            setShowUpgradeModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

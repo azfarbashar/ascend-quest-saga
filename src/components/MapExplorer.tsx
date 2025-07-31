@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, MapPin, Star, Trophy, Sword, Shield, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import QuestChallenge from '@/components/QuestChallenge';
 
 interface Checkpoint {
   id: string;
@@ -49,6 +50,7 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
     { id: 'npc3', x: 8, y: 7, type: 'info', name: 'Sage' }
   ]);
   const [showClouds, setShowClouds] = useState(true);
+  const [showQuest, setShowQuest] = useState(false);
   const { toast } = useToast();
 
   // Cloud loading effect
@@ -119,6 +121,19 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
+  const handleStartQuest = () => {
+    setShowQuest(true);
+  };
+
+  const handleQuestComplete = (score: number) => {
+    setShowQuest(false);
+    onStartQuest(checkpoint);
+    toast({
+      title: "Quest Completed!",
+      description: `You scored ${score}/${checkpoint.questionsCount}!`,
+    });
+  };
+
   // Check for NPC interactions
   useEffect(() => {
     const nearbyNpc = npcs.find(npc => 
@@ -182,6 +197,17 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
           <div className="absolute text-5xl opacity-70 top-[80%] -right-[5%] animate-[slide-in-right_1.8s_ease-out] [animation-delay:0.8s]">☁️</div>
         </div>
       </div>
+    );
+  }
+
+  if (showQuest) {
+    return (
+      <QuestChallenge
+        checkpoint={checkpoint}
+        character={character}
+        onComplete={handleQuestComplete}
+        onBack={() => setShowQuest(false)}
+      />
     );
   }
 
@@ -324,10 +350,10 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
                     <span className="text-accent font-medium">{checkpoint.xpReward} XP</span>
                   </div>
                   <Button 
-                    onClick={() => onStartQuest(checkpoint)}
+                    onClick={handleStartQuest}
                     className="bg-gradient-primary"
                   >
-                    Start Quest
+                    Start Quest Challenge
                   </Button>
                 </div>
               </CardContent>
