@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Map, MapPin, Star, Trophy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import MapExplorer from '@/components/MapExplorer';
 
 interface Checkpoint {
   id: string;
@@ -124,6 +125,8 @@ const AdventureWorld = () => {
   const [userPosition, setUserPosition] = useState({ x: 2, y: 2, zone: 'starting_area' });
   const [completedCheckpoints, setCompletedCheckpoints] = useState<string[]>([]);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<Checkpoint | null>(null);
+  const [exploringCheckpoint, setExploringCheckpoint] = useState<Checkpoint | null>(null);
+  const [userCharacter, setUserCharacter] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -136,7 +139,7 @@ const AdventureWorld = () => {
     const fetchUserData = async () => {
       const { data, error } = await supabase
         .from('profiles')
-        .select('level, map_position')
+        .select('level, map_position, selected_character')
         .eq('user_id', user.id)
         .single();
 
@@ -145,6 +148,7 @@ const AdventureWorld = () => {
       } else {
         setUserLevel(data.level || 1);
         setUserPosition(data.map_position as { x: number; y: number; zone: string } || { x: 2, y: 2, zone: 'starting_area' });
+        setUserCharacter(data.selected_character);
       }
 
       // Load completed checkpoints from localStorage (in real app, this would be from database)
@@ -295,6 +299,17 @@ const AdventureWorld = () => {
     );
   }
 
+  if (exploringCheckpoint && userCharacter) {
+    return (
+      <MapExplorer
+        checkpoint={exploringCheckpoint}
+        character={userCharacter}
+        onBack={() => setExploringCheckpoint(null)}
+        onStartQuest={startQuest}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-background">
       <div className="container mx-auto px-4 py-8">
@@ -351,7 +366,7 @@ const AdventureWorld = () => {
                           : 'bg-muted/20 border-muted'
                       : 'bg-background/50'
                 }`}
-                onClick={() => checkpoint && moveToCheckpoint(checkpoint)}
+                onClick={() => checkpoint && setExploringCheckpoint(checkpoint)}
               >
                 {isCurrentPosition && '👤'}
                 {checkpoint && !isCurrentPosition && (
