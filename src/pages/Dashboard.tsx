@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Trophy, Coins, Star, Settings, User } from "lucide-react";
+import { Trophy, Coins, Star, Settings, User, Package, Sword, Shield, Zap, Plus } from "lucide-react";
 import { CharacterSelection } from "@/components/CharacterSelection";
+import CharacterUpgrade from "@/components/CharacterUpgrade";
 import { useToast } from "@/hooks/use-toast";
 
 interface UserProfile {
@@ -72,6 +73,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [showCharacterSelection, setShowCharacterSelection] = useState(false);
   const [selectedCharacterData, setSelectedCharacterData] = useState<Character | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [inventory, setInventory] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -119,7 +122,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-background">
+    <div className="min-h-screen bg-black text-green-400 font-mono">
       <div className="container mx-auto px-4 py-8">
         {/* Character Selection Modal */}
         <CharacterSelection
@@ -133,51 +136,85 @@ const Dashboard = () => {
           {/* Character Sidebar */}
           {selectedCharacterData && (
             <div className="w-80 space-y-6">
-              <Card className="bg-gradient-card border-border">
+              <Card className="bg-green-900/20 border-green-400/30 shadow-lg shadow-green-400/10">
                 <CardHeader>
-                  <CardTitle className="text-lg text-foreground flex items-center space-x-2">
+                  <CardTitle className="text-lg text-green-400 flex items-center space-x-2">
                     <User className="w-5 h-5" />
-                    <span>Your Character</span>
+                    <span>PLAYER.CHAR</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="text-center">
+                  <div className="text-center border border-green-400/30 rounded p-4 bg-black/50">
                     <div className="text-5xl mb-2">{selectedCharacterData.icon}</div>
-                    <h3 className="text-xl font-bold text-foreground">{selectedCharacterData.name}</h3>
-                    <Badge variant="secondary" className="font-medium">
+                    <h3 className="text-xl font-bold text-green-300">{selectedCharacterData.name}</h3>
+                    <Badge className="bg-green-700 text-green-100 border-green-400">
                       {selectedCharacterData.class}
                     </Badge>
                   </div>
                   
-                  <p className="text-sm text-muted-foreground text-center">
+                  <p className="text-sm text-green-300/70 text-center font-mono">
                     {selectedCharacterData.description}
                   </p>
                   
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-semibold text-foreground">Stats</h4>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="text-center">
-                        <div className="font-medium text-destructive">STR</div>
-                        <div className="text-muted-foreground">{selectedCharacterData.stats.strength}</div>
+                  <div className="space-y-3 border border-green-400/30 rounded p-3 bg-black/30">
+                    <h4 className="text-sm font-bold text-green-400">STATS.SYS</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center text-red-400"><Sword className="w-3 h-3 mr-1"/>STR</span>
+                        <span className="text-green-300">{selectedCharacterData.stats.strength}</span>
                       </div>
-                      <div className="text-center">
-                        <div className="font-medium text-primary">INT</div>
-                        <div className="text-muted-foreground">{selectedCharacterData.stats.intelligence}</div>
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center text-blue-400"><Zap className="w-3 h-3 mr-1"/>INT</span>
+                        <span className="text-green-300">{selectedCharacterData.stats.intelligence}</span>
                       </div>
-                      <div className="text-center">
-                        <div className="font-medium text-accent">AGI</div>
-                        <div className="text-muted-foreground">{selectedCharacterData.stats.agility}</div>
+                      <div className="flex justify-between items-center">
+                        <span className="flex items-center text-yellow-400"><Shield className="w-3 h-3 mr-1"/>AGI</span>
+                        <span className="text-green-300">{selectedCharacterData.stats.agility}</span>
                       </div>
                     </div>
                   </div>
                   
-                  <Button 
-                    variant="outline" 
-                    className="w-full"
-                    onClick={() => setShowCharacterSelection(true)}
-                  >
-                    Change Character
-                  </Button>
+                  <div className="space-y-2">
+                    <Button 
+                      className="w-full bg-green-700 hover:bg-green-600 text-black border border-green-400"
+                      onClick={() => setShowUpgradeModal(true)}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      UPGRADE.EXE
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-green-400/50 text-green-400 hover:bg-green-400/10"
+                      onClick={() => setShowCharacterSelection(true)}
+                    >
+                      SWAP.CHAR
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Inventory */}
+              <Card className="bg-green-900/20 border-green-400/30 shadow-lg shadow-green-400/10">
+                <CardHeader>
+                  <CardTitle className="text-lg text-green-400 flex items-center space-x-2">
+                    <Package className="w-5 h-5" />
+                    <span>INVENTORY.SYS</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-4 gap-2">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div 
+                        key={i}
+                        className="aspect-square border border-green-400/30 rounded bg-black/50 flex items-center justify-center text-green-400/30 text-xs hover:border-green-400/60 transition-colors"
+                      >
+                        {i < inventory.length ? inventory[i].icon : "[ ]"}
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-green-300/50 mt-2 text-center">
+                    {inventory.length}/12 SLOTS.USED
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -186,77 +223,88 @@ const Dashboard = () => {
           {/* Main Content */}
           <div className="flex-1 space-y-8">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mb-8 border border-green-400/30 rounded p-4 bg-green-900/10">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16 border-2 border-primary">
-              <AvatarFallback className="bg-gradient-primary text-primary-foreground text-xl">
+            <div className="h-16 w-16 border-2 border-green-400 rounded bg-black/50 flex items-center justify-center">
+              <span className="text-green-400 text-2xl font-bold">
                 {profile?.display_name?.charAt(0) || user?.email?.charAt(0) || "?"}
-              </AvatarFallback>
-            </Avatar>
+              </span>
+            </div>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Welcome back, {profile?.display_name || "Hero"}!
+              <h1 className="text-3xl font-bold text-green-400 font-mono">
+                {'>'} WELCOME.BACK {profile?.display_name?.toUpperCase() || "PLAYER"}
               </h1>
-              <p className="text-muted-foreground">Ready for your next quest?</p>
+              <p className="text-green-300/70 font-mono">SYSTEM.STATUS: READY.FOR.QUEST</p>
             </div>
           </div>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
+            <Button className="bg-green-700 hover:bg-green-600 text-black border border-green-400">
               <Settings className="w-4 h-4 mr-2" />
-              Settings
+              CONFIG.SYS
             </Button>
-            <Button variant="outline" size="sm" onClick={signOut}>
-              Sign Out
+            <Button className="bg-red-700 hover:bg-red-600 text-white border border-red-400" onClick={signOut}>
+              LOGOUT.EXE
             </Button>
           </div>
         </div>
 
         {/* Stats Cards */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-card border-border">
+          <Card className="bg-green-900/20 border-green-400/30 shadow-lg shadow-green-400/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Level</CardTitle>
-              <Trophy className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-mono text-green-400">LEVEL.SYS</CardTitle>
+              <Trophy className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-primary">{profile?.level || 1}</div>
+              <div className="text-2xl font-bold text-green-300 font-mono">{profile?.level || 1}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border">
+          <Card className="bg-green-900/20 border-green-400/30 shadow-lg shadow-green-400/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Experience</CardTitle>
-              <Star className="h-4 w-4 text-accent" />
+              <CardTitle className="text-sm font-mono text-green-400">EXP.DATA</CardTitle>
+              <Star className="h-4 w-4 text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-accent">{profile?.experience || 0}</div>
-              <Progress value={experienceProgress} className="mt-2" />
-              <p className="text-xs text-muted-foreground mt-1">
-                {(profile?.experience || 0) % 1000} / {experienceToNextLevel} to next level
+              <div className="text-2xl font-bold text-green-300 font-mono">{profile?.experience || 0}</div>
+              <div className="mt-2 bg-black/50 border border-green-400/30 rounded h-2">
+                <div 
+                  className="bg-green-400 h-full rounded transition-all duration-300"
+                  style={{ width: `${experienceProgress}%` }}
+                />
+              </div>
+              <p className="text-xs text-green-300/70 mt-1 font-mono">
+                {(profile?.experience || 0) % 1000} / {experienceToNextLevel} TO.NEXT
               </p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border">
+          <Card className="bg-green-900/20 border-green-400/30 shadow-lg shadow-green-400/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Coins</CardTitle>
-              <Coins className="h-4 w-4 text-secondary" />
+              <CardTitle className="text-sm font-mono text-green-400">COINS.BAL</CardTitle>
+              <Coins className="h-4 w-4 text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-secondary">{profile?.coins || 100}</div>
+              <div className="text-2xl font-bold text-green-300 font-mono">{profile?.coins || 100}</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border">
+          <Card className="bg-green-900/20 border-green-400/30 shadow-lg shadow-green-400/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Character</CardTitle>
+              <CardTitle className="text-sm font-mono text-green-400">CHAR.ID</CardTitle>
             </CardHeader>
             <CardContent>
               {profile?.selected_character ? (
-                <Badge variant="secondary">{selectedCharacterData?.name || profile.selected_character}</Badge>
+                <Badge className="bg-green-700 text-green-100 border-green-400 font-mono">
+                  {selectedCharacterData?.name || profile.selected_character}
+                </Badge>
               ) : (
-                <Button size="sm" onClick={() => setShowCharacterSelection(true)}>
-                  Choose Character
+                <Button 
+                  size="sm" 
+                  className="bg-green-700 hover:bg-green-600 text-black border border-green-400"
+                  onClick={() => setShowCharacterSelection(true)}
+                >
+                  SELECT.CHAR
                 </Button>
               )}
             </CardContent>
@@ -265,63 +313,62 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-all duration-300 cursor-pointer">
+          <Card className="bg-green-900/20 border-green-400/30 hover:border-green-400/60 transition-all duration-300 cursor-pointer shadow-lg shadow-green-400/10 hover:shadow-green-400/20">
             <CardHeader>
-              <CardTitle className="text-lg">Adventure World</CardTitle>
-              <CardDescription>Explore the game world and level up</CardDescription>
+              <CardTitle className="text-lg text-green-400 font-mono">ADVENTURE.EXE</CardTitle>
+              <CardDescription className="text-green-300/70 font-mono">Explore.the.game.world.and.level.up</CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                className="w-full bg-gradient-primary" 
+                className="w-full bg-green-700 hover:bg-green-600 text-black border border-green-400 font-mono" 
                 onClick={() => navigate('/adventure')}
               >
-                Enter Adventure
+                {'>'} ENTER.WORLD
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-all duration-300 cursor-pointer">
+          <Card className="bg-green-900/20 border-green-400/30 hover:border-green-400/60 transition-all duration-300 cursor-pointer shadow-lg shadow-green-400/10 hover:shadow-green-400/20">
             <CardHeader>
-              <CardTitle className="text-lg">Battle Mode</CardTitle>
-              <CardDescription>Challenge powerful bosses</CardDescription>
+              <CardTitle className="text-lg text-green-400 font-mono">BATTLE.SYS</CardTitle>
+              <CardDescription className="text-green-300/70 font-mono">Challenge.powerful.bosses</CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                className="w-full bg-gradient-accent"
+                className="w-full bg-red-700 hover:bg-red-600 text-white border border-red-400 font-mono"
                 onClick={() => navigate('/battle')}
               >
-                Enter Battle
+                {'>'} ENTER.BATTLE
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-all duration-300 cursor-pointer">
+          <Card className="bg-green-900/20 border-green-400/30 hover:border-green-400/60 transition-all duration-300 cursor-pointer shadow-lg shadow-green-400/10 hover:shadow-green-400/20">
             <CardHeader>
-              <CardTitle className="text-lg">Daily Challenge</CardTitle>
-              <CardDescription>Earn bonus rewards</CardDescription>
+              <CardTitle className="text-lg text-green-400 font-mono">DAILY.QUEST</CardTitle>
+              <CardDescription className="text-green-300/70 font-mono">Earn.bonus.rewards</CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                className="w-full bg-gradient-secondary"
+                className="w-full bg-blue-700 hover:bg-blue-600 text-white border border-blue-400 font-mono"
                 onClick={() => navigate('/daily-challenge')}
               >
-                Accept Challenge
+                {'>'} ACCEPT.CHALLENGE
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-card border-border hover:border-primary/50 transition-all duration-300 cursor-pointer">
+          <Card className="bg-green-900/20 border-green-400/30 hover:border-green-400/60 transition-all duration-300 cursor-pointer shadow-lg shadow-green-400/10 hover:shadow-green-400/20">
             <CardHeader>
-              <CardTitle className="text-lg">Shop</CardTitle>
-              <CardDescription>Buy items and upgrades</CardDescription>
+              <CardTitle className="text-lg text-green-400 font-mono">SHOP.NET</CardTitle>
+              <CardDescription className="text-green-300/70 font-mono">Buy.items.and.upgrades</CardDescription>
             </CardHeader>
             <CardContent>
               <Button 
-                className="w-full" 
-                variant="outline"
+                className="w-full bg-black border border-green-400 text-green-400 hover:bg-green-400/10 font-mono"
                 onClick={() => navigate('/shop')}
               >
-                Browse Shop
+                {'>'} BROWSE.SHOP
               </Button>
             </CardContent>
           </Card>
@@ -329,6 +376,18 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Character Upgrade Modal */}
+      {showUpgradeModal && selectedCharacterData && (
+        <CharacterUpgrade
+          character={selectedCharacterData}
+          onClose={() => setShowUpgradeModal(false)}
+          onUpdate={(updatedCharacter) => {
+            setSelectedCharacterData(updatedCharacter);
+            setShowUpgradeModal(false);
+          }}
+        />
+      )}
     </div>
   );
 };

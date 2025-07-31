@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Star, Trophy, Lock, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import MapExplorer from '@/components/MapExplorer';
-import CharacterUpgrade from '@/components/CharacterUpgrade';
+
 
 interface Checkpoint {
   id: string;
@@ -159,7 +159,7 @@ const AdventureWorld = () => {
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<Checkpoint | null>(null);
   const [exploringCheckpoint, setExploringCheckpoint] = useState<Checkpoint | null>(null);
   const [userCharacter, setUserCharacter] = useState<any>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -316,12 +316,6 @@ const AdventureWorld = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Button 
-              onClick={() => setShowUpgradeModal(true)}
-              className="bg-yellow-500 hover:bg-yellow-600 text-white"
-            >
-              Upgrade Character
-            </Button>
             <Card className="bg-white/20 backdrop-blur-sm border-white/30">
               <CardContent className="flex items-center space-x-2 p-3">
                 <Trophy className="w-4 h-4 text-yellow-400" />
@@ -332,7 +326,14 @@ const AdventureWorld = () => {
         </div>
 
         {/* World Map */}
-        <div className="relative w-full h-[600px] bg-gradient-to-br from-green-300 via-green-400 to-blue-400 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl">
+        <div className="relative w-full h-[600px] bg-gradient-to-br from-green-400 via-green-500 to-green-600 rounded-3xl overflow-hidden border-4 border-white/30 shadow-2xl"
+             style={{
+               backgroundImage: `
+                 radial-gradient(circle at 20% 30%, rgba(34, 197, 94, 0.8) 0%, transparent 50%),
+                 radial-gradient(circle at 80% 70%, rgba(22, 163, 74, 0.6) 0%, transparent 50%),
+                 linear-gradient(45deg, #22c55e 0%, #16a34a 50%, #15803d 100%)
+               `
+             }}>
           {/* Water pattern overlay */}
           <div className="absolute inset-0 opacity-30">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.3)_0%,transparent_50%)]"></div>
@@ -357,7 +358,7 @@ const AdventureWorld = () => {
                 onClick={() => handleCheckpointClick(checkpoint)}
               >
                 {/* Area background */}
-                <div className={`w-24 h-24 rounded-2xl bg-gradient-to-br ${checkpoint.bgColor} shadow-xl border-4 border-white/50 flex flex-col items-center justify-center relative overflow-hidden`}>
+                <div className={`w-28 h-28 rounded-2xl bg-gradient-to-br ${checkpoint.bgColor} shadow-xl border-4 border-white/50 flex flex-col items-center justify-center relative overflow-hidden transform hover:scale-110 transition-all duration-300`}>
                   {/* Lock overlay for locked areas */}
                   {!isUnlocked && (
                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center rounded-2xl">
@@ -462,16 +463,6 @@ const AdventureWorld = () => {
         </div>
       </div>
 
-      {showUpgradeModal && (
-        <CharacterUpgrade
-          character={userCharacter}
-          onClose={() => setShowUpgradeModal(false)}
-          onUpdate={(updatedCharacter) => {
-            setUserCharacter(updatedCharacter);
-            setShowUpgradeModal(false);
-          }}
-        />
-      )}
     </div>
   );
 };
