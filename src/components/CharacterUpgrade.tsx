@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,7 @@ const CharacterUpgrade = ({ character, onClose, onUpdate }: CharacterUpgradeProp
   const [isUpdating, setIsUpdating] = useState(false);
   const [newName, setNewName] = useState(characterData.name);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchUserCoins = async () => {
       if (user) {
         const { data } = await supabase
@@ -229,7 +229,7 @@ const CharacterUpgrade = ({ character, onClose, onUpdate }: CharacterUpgradeProp
                       <div>
                         <div className="font-medium capitalize">{statName}</div>
                         <div className={`text-sm ${getStatColor(statName)} font-bold`}>
-                          {statValue}
+                          {Number(statValue)}
                         </div>
                       </div>
                     </div>
