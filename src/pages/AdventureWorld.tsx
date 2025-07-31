@@ -274,7 +274,7 @@ const AdventureWorld = () => {
   }
 
   if (exploringCheckpoint) {
-    const defaultCharacter = userCharacter || {
+    const defaultCharacter = userCharacter && userCharacter.stats ? userCharacter : {
       id: 'default',
       name: 'Adventurer',
       class: 'Student',
