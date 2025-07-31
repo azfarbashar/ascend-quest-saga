@@ -48,9 +48,19 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
     { id: 'npc2', x: 7, y: 2, type: 'shop', name: 'Merchant' },
     { id: 'npc3', x: 8, y: 7, type: 'info', name: 'Sage' }
   ]);
+  const [showClouds, setShowClouds] = useState(true);
   const { toast } = useToast();
 
+  // Cloud loading effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowClouds(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
+    console.log(`Moving player ${direction}`);
     setPlayerPosition(prev => {
       let newX = prev.x;
       let newY = prev.y;
@@ -70,6 +80,7 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
           break;
       }
       
+      console.log(`New position: (${newX}, ${newY})`);
       return { x: newX, y: newY };
     });
   };
@@ -152,6 +163,27 @@ const MapExplorer = ({ checkpoint, character, onBack, onStartQuest }: MapExplore
       default: return '👤';
     }
   };
+
+  if (showClouds) {
+    return (
+      <div className="min-h-screen bg-gradient-background relative overflow-hidden">
+        <div className="absolute inset-0 flex items-center justify-center z-20">
+          <div className="text-center space-y-4">
+            <div className="text-6xl animate-pulse">☁️</div>
+            <p className="text-xl text-foreground">Loading {checkpoint.name}...</p>
+          </div>
+        </div>
+        {/* Animated clouds */}
+        <div className="absolute inset-0">
+          <div className="absolute text-6xl opacity-80 top-[20%] -right-[10%] animate-[slide-in-right_2s_ease-out]">☁️</div>
+          <div className="absolute text-6xl opacity-80 top-[50%] -right-[10%] animate-[slide-in-right_2s_ease-out] [animation-delay:0.5s]">☁️</div>
+          <div className="absolute text-6xl opacity-80 top-[70%] -right-[10%] animate-[slide-in-right_2s_ease-out] [animation-delay:1s]">☁️</div>
+          <div className="absolute text-4xl opacity-60 top-[10%] -right-[15%] animate-[slide-in-right_2.5s_ease-out] [animation-delay:0.2s]">☁️</div>
+          <div className="absolute text-5xl opacity-70 top-[80%] -right-[5%] animate-[slide-in-right_1.8s_ease-out] [animation-delay:0.8s]">☁️</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-background">

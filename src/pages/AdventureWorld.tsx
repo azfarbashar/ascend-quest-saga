@@ -299,11 +299,19 @@ const AdventureWorld = () => {
     );
   }
 
-  if (exploringCheckpoint && userCharacter) {
+  if (exploringCheckpoint) {
+    const defaultCharacter = userCharacter || {
+      id: 'default',
+      name: 'Adventurer',
+      class: 'Student',
+      stats: { health: 100, attack: 25, defense: 20, speed: 15 },
+      avatar: '🧙‍♂️'
+    };
+    
     return (
       <MapExplorer
         checkpoint={exploringCheckpoint}
-        character={userCharacter}
+        character={defaultCharacter}
         onBack={() => setExploringCheckpoint(null)}
         onStartQuest={startQuest}
       />
